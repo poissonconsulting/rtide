@@ -24,6 +24,7 @@ Imports:
     stringr,
     tidyr,
     tibble,
+    TideHarmonics,
     utils
 Suggests:
     ggplot2,
