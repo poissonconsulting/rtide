@@ -2,26 +2,22 @@ source("data-raw/noaa/header.R")
 
 get_station_harmonics <- function(x, harmonics, html) {
   stopifnot(nrow(x) == 1)
-  html %<>% str_c("/harcon.html?id=", x$ID)
+
+  html %<>% str_c("/harcon.html?unit=0&timezone=0&id=", x$Station) # harmonics for m in GMT
 
   table <- read_html(html) %>% html_nodes("table.table.table-striped") %>% html_table()
 
-  print(table)
   if (!length(table)) return(NULL)
 
   table <- table[[1]]
 
   x %<>% merge(table, by = NULL)
 
-  print(x)
-
   if (!identical(x$Name, harmonics$Harmonic)) return(NULL)
   stopifnot(!identical(x$Speed, harmonics$Speed))
 
-  x %<>% select(ID, Harmonic = Name, Amplitude, Phase)
+  x %<>% select(Station, Harmonic = Name, Amplitude, Phase)
 
-  print(x)
-  stop()
   x
 }
 

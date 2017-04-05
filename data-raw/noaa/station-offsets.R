@@ -2,25 +2,26 @@ source("data-raw/noaa/header.R")
 
 get_station_offsets <- function(x, html) {
   stopifnot(nrow(x) == 1)
-  html %<>% str_c("/noaatidepredictions/NOAATidesFacade.jsp?Stationid=", x$ID)
-  text <- read_html(html) %>% html_nodes(xpath="//div//div//ul//div//div//div//div") %>% html_text()
 
-  text %<>% str_c(collapse = "\t") %>% str_replace_all("\n", "\t")
+  x %<>% select(Station)
 
-  x$Datum <- str_replace(text, "(.*Datum:\\s+)([^\t]+)(.*)", "\\2")
-  x$Units <- str_replace(text, "(.*Daily Tide Prediction in\\s+)([^\\s]+)(.*)", "\\2")
-  x$TimeZone <- str_replace(text, "(.*Time Zone:\\s+)([\\w//]+)(Datum:.*)", "\\2")
+  html %<>% str_c("/noaatidepredictions/NOAATidesFacade.jsp?Stationid=", x$Station)
 
   text <- read_html(html) %>% html_nodes(xpath = "//p") %>% html_text()
   text <- text[str_detect(text, "Referenced")]
 
-  x$ReferenceID <- str_replace(text, "(.*Referenced to Station:[^\\(]+\\(\\s+)(\\w+)(\\s+\\).*\n)", "\\2")
-  x$TimeOffset <- str_replace(text, "(.*Time offset in mins\\s+\\()(.*)(\\)\\s+Height offset.*)", "\\2")
-  x$HeightOffset <- str_replace(text, "(.*Height offset in feet\\s+\\()(.*)(\\)\n.*)", "\\2")
+  x$ReferenceStation <- str_replace(text, "(.*Referenced to Station:[^\\(]+\\(\\s+)(\\w+)(\\s+\\).*\n)", "\\2")
+  time_offset <- str_replace(text, "(.*Time offset in mins\\s+\\()(.*)(\\)\\s+Height offset.*)", "\\2")
+  height_offset <- str_replace(text, "(.*Height offset in feet\\s+\\()(.*)(\\)\n.*)", "\\2")
 
-  print(x)
-  stop()
+  x$TimeOffsetHigh <- str_replace(time_offset, "(.*high:\\s*)(.*)(\\s+low:.*\n)", "\\2") %>% str_replace_all("\\s{1,}", "") %>% as.numeric()
+  x$TimeOffsetLow <- str_replace(time_offset, "(.*low:\\s*)(.*)(\\s+.*)", "\\2") %>% str_replace_all("\\s{1,}", "") %>% as.numeric()
 
+  x$HeightOffsetHigh <- str_replace(height_offset, "(.*high:\\s*)(.*)(\\s+low:.*)", "\\2") %>% str_replace_all("\\s{1,}", "")
+  x$HeightOffsetLow <- str_replace(height_offset, "(.*low:\\s*)(.*)", "\\2") %>% str_replace_all("\\s{1,}", "")
+
+  if (!str_detect(x$HeightOffsetHigh, "^[*]")) x$HeightOffsetHigh %<>% as.numeric() %>% ft_2_m() %>% as.character()
+  if (!str_detect(x$HeightOffsetLow, "^[*]")) x$HeightOffsetLow %<>% as.numeric() %>% ft_2_m() %>% as.character()
   x
 }
 
