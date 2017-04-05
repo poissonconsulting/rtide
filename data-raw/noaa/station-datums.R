@@ -5,20 +5,15 @@ get_station_datum <- function(x, html) {
 
   html %<>% str_c("/datums.html?units=1&epoch=0&id=", x$Station) # datums in m
 
-  table <- read_html(html) %>% html_nodes(".table-striped :nth-child(1)") #%>% html_table()
-
-  print(table)
-
-  stop()
-#  %>% html_table()
+  table <- read_html(html) %>% html_table()
 
   if (!length(table)) return(NULL)
 
   table <- table[[1]]
 
-  # some filtering to get MLLW
+  table %<>% filter(Datum == "MLLW")
 
-  x %<>% merge(table, by = NULL)
+  x$MLLW <- table$Value
 
   x %<>% select(Station, MLLW)
 
