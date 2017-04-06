@@ -87,7 +87,7 @@ predict_rtide_height_reference_station_datetime <- function(date_time, rtide) {
   datum <- rtide$stations$Datum
 
   height <- amplitude * cosd(speed * hours_year(date_time) - phase)
-  height %<>% sum() #%>% magrittr::add(datum)
+  height %<>% sum() %>% magrittr::add(datum)
   height
 }
 
