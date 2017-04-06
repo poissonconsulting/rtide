@@ -21,6 +21,8 @@ get_stations <- function(x, html) {
   table$Station %<>% as.character()
   table$Latitude %<>% as.numeric()
   table$Longitude %<>% as.numeric()
+
+  table$StationName %<>% str_to_title()
   table %<>% as.tbl()
 
   table
