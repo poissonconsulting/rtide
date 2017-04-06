@@ -11,7 +11,7 @@ get_station_datum <- function(x, html) {
 
   table <- table[[1]]
 
-  table %<>% filter(Datum == "MLLW")
+  table %<>% filter(Datum == "MSL")
 
   x$Datum <- table$Value %>% as.numeric()
 
