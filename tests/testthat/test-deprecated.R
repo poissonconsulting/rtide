@@ -60,7 +60,7 @@ test_that("tide_height_data predictions", {
   monterey$Station <- "Monterey, Monterey Harbor, California"
 
   expect_equal(monterey$MLLW,
-               tide_height_data(monterey)$TideHeight, tolerance = 0.002)
+               tide_height_data(monterey)$TideHeight, tolerance = 0.01)
 
   brandywine <- rtide::brandywine
   brandywine$MLLW <- brandywine$TideHeight
