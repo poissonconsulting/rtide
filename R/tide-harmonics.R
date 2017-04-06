@@ -5,6 +5,7 @@
 #' @param x The object to test.
 #' @export
 is.tide_harmonics <- function(x) {
+  .Deprecated(msg = "tide_harmonics objects are deprecated for rtide objects such as rtide::noaa")
   inherits(x, "tide_harmonics")
 }
 
@@ -89,6 +90,7 @@ tide_harmonics <- function (x) {
 
 #' @export
 subset.tide_harmonics <- function(x, stations, ...) {
+  .Deprecated(msg = "tide_harmonics objects are deprecated for rtide objects such as rtide::noaa")
   stations %<>% tide_stations(x)
   stations <- x$Station$Station %in% stations %>% which()
   x$Station %<>% dplyr::slice(stations)

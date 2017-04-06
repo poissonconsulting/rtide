@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 `rtide` is an R package to calculate tide heights based on tide station harmonics.
 
-It includes the harmonics data for `r length(rtide::tide_stations())` US stations.
+It includes the harmonics for xx NOAA tide stations and the offsets for an additional xx secondary NOAA tide stations.
 
 ## Utilisation
 
@@ -73,6 +73,7 @@ Please report any [issues](https://github.com/poissonconsulting/rtide/issues).
 
 ## Inspiration
 
-The harmonics data was converted from harmonics-dwf-20151227-free, NOAA web site data
+The code to calculate tide heights from the harmonics is inspired by XTide.
+
+The (deprecated) harmonics data was converted from harmonics-dwf-20151227-free, NOAA web site data
 processed by David Flater for [XTide](http://www.flaterco.com/xtide/).
-The code to calculate tide heights from the harmonics is based on XTide.
