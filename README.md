@@ -8,11 +8,9 @@ rtide
 Introduction
 ------------
 
-`rtide` is an R package to calculate tide heights.
+`rtide` is an R package to calculate tide heights and the timing of slack tides.
 
-The included rtide object `noaa` includes the harmonics for 816 reference, and the offsets for 2226 secondary, NOAA tide stations.
-
-The `noaa` harmonics and offsets were scrapped from <https://tidesandcurrents.noaa.gov> on April 5, 2017.
+The object `rtide::noaa` allows tide height predictions for NOAA tide stations.
 
 Utilisation
 -----------
@@ -56,7 +54,7 @@ ggplot(data = data, aes(x = DateTime, y = TideHeight)) +
   ggtitle(str_c(data$StationName[1], " (", data$Station[1],")"))
 ```
 
-![](README-unnamed-chunk-5-1.png)
+![](tools/README-unnamed-chunk-5-1.png)
 
 Installation
 ------------
@@ -81,5 +79,3 @@ Inspiration
 -----------
 
 The code to calculate tide heights from the harmonics is inspired by XTide.
-
-The `harmonics` object which has been deprecated for the `noaa` object was converted from harmonics-dwf-20151227-free, NOAA web site data processed by David Flater for [XTide](http://www.flaterco.com/xtide/).

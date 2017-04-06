@@ -8,7 +8,7 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "tools/README-"
 )
 ```
 
@@ -31,6 +31,7 @@ The object `rtide::noaa` allows tide height predictions for `r nrow(rtide::noaa$
 ```{r, message=FALSE}
 library(magrittr)
 library(stringr)
+library(dplyr)
 ```
 
 ```{r}
