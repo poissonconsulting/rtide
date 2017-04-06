@@ -68,7 +68,7 @@ test_that("tide_height_data predictions", {
   brandywine$Station <- "Brandywine Shoal Light, Delaware Bay, New Jersey"
 
   expect_equal(brandywine$MLLW,
-               tide_height_data(brandywine)$TideHeight, tolerance = 0.002)
+               tide_height_data(brandywine)$TideHeight, tolerance = 0.01)
 })
 
 test_that("tide_height_data checks", {
