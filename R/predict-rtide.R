@@ -78,50 +78,55 @@
 #   data
 # }
 
-predict_rtide_station <- function(data, rtide) {
+predict_rtide_reference_station <- function(data, rtide) {
+
 
 }
 
-add_speeds <- function(x) {
-  x$harmonics %<>% dplyr::left_join(TideHarmonics::harmonics, by = c("HarmonicName" = "name"))
-  stopifnot(!any(is.na(x$harmonics$Speed)))
-  x
+add_speeds <- function(rtide) {
+  rtide$harmonics %<>% dplyr::inner_join(TideHarmonics::harmonics, by = c("HarmonicName" = "name"))
+  rtide
 }
 
 #' Predict Tide Height
 #'
 #' Predicts tide heights (in m) at stations and date times provided in new_data.
 #'
-#' @param object The rtide object to use for the predictions.
-#' @param new_data A data.frame with the columns DateTime and Station.
+#' @param data A data.frame with the columns DateTime and Station.
+#' @param rtide The rtide object to use for the predictions.
 #' @param slack A flag indicating whether to also calculate the time and height of the closest slack tide.
 #' @param ... Unused arguments.
 #' @return An updated data.frame with the additional column TideHeight and if \code{slack = TRUE}
 #' the additional columns DateTimeSlack and TideHeightSlack.
 #' @export
-predict.rtide <- function(object, new_data, slack = FALSE, ...) {
-  check_rtide(object)
-  check_data2(new_data, values = list(DateTime = Sys.Date(), Station = ""))
+predict_rtide <- function(data, rtide = rtide::noaa, slack = FALSE, ...) {
+  check_data2(data, values = list(DateTime = Sys.Date(), Station = ""))
+  check_rtide(rtide)
   check_flag(slack)
 
-  if (!all(new_data$Station %in% object$stations$Station)) error("unrecognised stations")
+  if (slack) error("predict_rtide is currently not implemented for slack tides")
 
-  tz <- lubridate::tz(new_data$DateTime)
+  if (!all(data$Station %in% rtide$stations$Station)) error("unrecognised stations")
 
-  new_data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
+  tz <- lubridate::tz(data$DateTime)
 
-  object %<>% add_speeds()
+  data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
 
-  reference <- dplyr::semi_join(new_data, dplyr::filter_(object$stations, ~!is.na(Datum)), by = "Station")
-  secondary <- dplyr::semi_join(new_data, dplyr::filter_(object$stations, ~is.na(Datum)), by = "Station")
+  rtide %<>% add_speeds()
 
-#  secondary %<>% dplyr::inner_join(dplyr::select(object$st))
+  reference <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~!is.na(Datum)), by = "Station")
 
-#  new_data %<>% plyr::ddply(.variables = c("Station"), predict_rtide_station, rtide = x)
+  secondary <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~is.na(Datum)), by = "Station")
 
-  new_data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
+  if (nrow(secondary)) error("predict_rtide is currently not implemented for secondary tide stations")
+
+  reference %<>% plyr::ddply(.variables = c("Station"), predict_rtide_reference_station, rtide = rtide)
+
+  data <- reference
+
+  data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
     dplyr::arrange_(~Station, ~DateTime) %>%
     dplyr::as.tbl()
 
-  new_data
+  data
 }
