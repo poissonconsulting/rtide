@@ -1,7 +1,3 @@
-ft2m <- function(x) {
-  x %<>% magrittr::multiply_by(0.3048)
-  x
-}
 
 #' Tide Stations
 #'

@@ -13,4 +13,6 @@ harmonics$Harmonic <- c(
 
 harmonics %<>% select(Harmonic, HarmonicName = name, Speed = speed)
 
+harmonics %<>% as.tbl()
+
 saveRDS(harmonics, "data-raw/noaa/data/harmonics.rds")

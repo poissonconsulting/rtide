@@ -14,14 +14,14 @@ get_station_offsets <- function(x, html) {
   time_offset <- str_replace(text, "(.*Time offset in mins\\s+\\()(.*)(\\)\\s+Height offset.*)", "\\2")
   height_offset <- str_replace(text, "(.*Height offset in feet\\s+\\()(.*)(\\)\n.*)", "\\2")
 
-  x$TimeOffsetHigh <- str_replace(time_offset, "(.*high:\\s*)(.*)(\\s+low:.*\n)", "\\2") %>% str_replace_all("\\s{1,}", "") %>% as.numeric()
-  x$TimeOffsetLow <- str_replace(time_offset, "(.*low:\\s*)(.*)(\\s+.*)", "\\2") %>% str_replace_all("\\s{1,}", "") %>% as.numeric()
+  x$TimeHigh <- str_replace(time_offset, "(.*high:\\s*)(.*)(\\s+low:.*\n)", "\\2") %>% str_replace_all("\\s{1,}", "") %>% as.numeric()
+  x$TimeLow <- str_replace(time_offset, "(.*low:\\s*)(.*)(\\s+.*)", "\\2") %>% str_replace_all("\\s{1,}", "") %>% as.numeric()
 
-  x$HeightOffsetHigh <- str_replace(height_offset, "(.*high:\\s*)(.*)(\\s+low:.*)", "\\2") %>% str_replace_all("\\s{1,}", "")
-  x$HeightOffsetLow <- str_replace(height_offset, "(.*low:\\s*)(.*)", "\\2") %>% str_replace_all("\\s{1,}", "")
+  x$HeightHigh <- str_replace(height_offset, "(.*high:\\s*)(.*)(\\s+low:.*)", "\\2") %>% str_replace_all("\\s{1,}", "")
+  x$HeightLow <- str_replace(height_offset, "(.*low:\\s*)(.*)", "\\2") %>% str_replace_all("\\s{1,}", "")
 
-  if (!str_detect(x$HeightOffsetHigh, "^[*]")) x$HeightOffsetHigh %<>% as.numeric() %>% ft_2_m() %>% as.character()
-  if (!str_detect(x$HeightOffsetLow, "^[*]")) x$HeightOffsetLow %<>% as.numeric() %>% ft_2_m() %>% as.character()
+  if (!str_detect(x$HeightHigh, "^[*]")) x$HeightHigh %<>% as.numeric() %>% rtide:::ft2m() %>% as.character()
+  if (!str_detect(x$HeightLow, "^[*]")) x$HeightLow %<>% as.numeric() %>% rtide:::ft2m() %>% as.character()
   x
 }
 

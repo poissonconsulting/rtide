@@ -10,8 +10,9 @@ harmonics
 }
 \description{
 A object of class tide_harmonics providing tidal harmonic data for US stations.
+Converted from harmonics-dwf-20151227-free, NOAA web site data processed by David Flater for XTide.
 }
 \details{
-Converted from harmonics-dwf-20151227-free, NOAA web site data processed by David Flater for XTide.
+harmonics is deprecated. Please use \code{\link{noaa}} and predict instead.
 }
 \keyword{datasets}
