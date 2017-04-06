@@ -32,16 +32,16 @@ library(rtide)
 # get all tide stations
 data <- rtide::noaa$stations 
 
-# select santa barbara by station name
-data %<>% filter(str_detect(StationName, "Santa Barbara$")) 
+# select Monterey by station name
+data %<>% filter(str_detect(StationName, "^Monterey")) 
 data
 #> # A tibble: 1 × 5
-#>   Station Datum Longitude Latitude   StationName
-#>     <chr> <dbl>     <dbl>    <dbl>         <chr>
-#> 1 9411340 0.964  -119.685  34.4083 Santa Barbara
+#>   Station Datum Longitude Latitude            StationName
+#>     <chr> <dbl>     <dbl>    <dbl>                  <chr>
+#> 1 9413450 1.031  -121.888   36.605 Monterey, Monterey Bay
 
 # set up date times for predictions
-datetime <- rtide::seq_datetime(from = as.Date("2016-07-13"), minutes = 10L, tz = "PST8PDT") 
+datetime <- rtide::seq_datetime(from = as.Date("2016-07-13"), to = as.Date("2016-07-15"), minutes = 10L, tz = "PST8PDT") 
 
 # add to stations
 data %<>% merge(data_frame(DateTime = datetime)) %>% as.tbl()
@@ -51,7 +51,7 @@ data %<>% rtide::predict_rtide(rtide = rtide::noaa)
 ```
 
 ``` r
-# plot predictions
+# plot tide heights
 ggplot(data = data, aes(x = DateTime, y = TideHeight)) + 
   geom_line() + 
   scale_x_datetime(name = "Date", labels = date_format("%d %b %Y", tz = tz(data$DateTime))) +

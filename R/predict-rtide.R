@@ -130,22 +130,19 @@ predict_rtide <- function(data, rtide = rtide::noaa, slack = FALSE, ...) {
 
   if (slack) error("predict_rtide is currently not implemented for slack tides")
 
-  if (!all(data$Station %in% rtide$stations$Station)) error("unrecognised stations")
+  rtide %<>% subset(data$Station) %>% add_speeds()
 
   tz <- lubridate::tz(data$DateTime)
-
   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
 
-  rtide %<>% add_speeds()
-
-  reference <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~!is.na(Datum)), by = "Station")
+  primary <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~!is.na(Datum)), by = "Station")
   secondary <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~is.na(Datum)), by = "Station")
 
   if (nrow(secondary)) error("predict_rtide is currently not implemented for secondary tide stations")
 
-  reference %<>% plyr::ddply(.variables = c("Station"), predict_rtide_reference_station, rtide = rtide)
+  primary %<>% plyr::ddply(.variables = c("Station"), predict_rtide_reference_station, rtide = rtide)
 
-  data <- reference
+  data <- primary
 
   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
       dplyr::arrange_(~Station, ~DateTime) %>%
