@@ -45,15 +45,14 @@ check_rtide <- function(x) {
 }
 
 #' @export
-subset.rtide <- function(x, stations) {
+subset.rtide <- function(x, stations, ...) {
   check_vector(stations, "")
   stations %<>% unique()
   if (!all(stations %in% x$stations$Station)) error("unrecognized stations")
 
-  x$station_offsets %<>% filter(Station %in% stations)
-  print(c(stations, x$station_offsets$ReferenceStation))
-  x$stations %<>% filter(Station %in% c(stations, x$station_offsets$ReferenceStation))
-  x$station_harmonics %<>% filter(Station %in% x$stations$Station)
+  x$station_offsets %<>% dplyr::filter_(~Station %in% stations)
+  x$stations <- x$stations[x$stations$Station %in% c(stations, x$station_offsets$ReferenceStation),]
+  x$station_harmonics <- x$station_harmonics[x$station_harmonics$Station %in% x$stations$Station,]
   x
 }
 

@@ -9,9 +9,7 @@
 noaa
 }
 \description{
-A object of class rtide providing harmonics data for xx NOAA tide stations and offsets for additional 2,226 NOAA tide stations.
-}
-\details{
+A object of class rtide providing harmonics and offsets for NOAA tide stations.
 The information was scraped from \url{"https://tidesandcurrents.noaa.gov"} on April 5, 2017.
 }
 \keyword{datasets}

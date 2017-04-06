@@ -79,14 +79,29 @@
 # }
 #
 
-predict_rtide_height_reference_station <- function(data, rtide) {
+predict_rtide_height_reference_station_datetime <- function(date_time, rtide) {
 
+  amplitude <- rtide$station_harmonics$Amplitude
+  speed <- rtide$station_harmonics$Speed
+  phase <- rtide$station_harmonics$Phase
+  datum <- rtide$stations$Datum
+
+  height <- amplitude * cos((speed * hours_year(date_time) + phase) * pi/180)
+  height %<>% sum() %>% magrittr::add(datum)
+  height
+}
+
+predict_rtide_reference_station_row <- function(data, rtide) {
+  data$TideHeight <- predict_rtide_height_reference_station_datetime(data$DateTime, rtide)
+  data
 }
 
 predict_rtide_reference_station <- function(data, rtide) {
   rtide %<>% subset(data$Station[1])
 
-  data %<>% plyr::adply(.margins = 1, .fun = predict_rtide_height_reference_station,
+  rtide$station_harmonics %<>% dplyr::full_join(rtide$harmonics, by = "Harmonic")
+
+  data %<>% plyr::adply(.margins = 1, .fun = predict_rtide_reference_station_row,
                         rtide = rtide)
   data
 }
@@ -121,12 +136,9 @@ predict_rtide <- function(data, rtide = rtide::noaa, slack = FALSE, ...) {
 
   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
 
-  print(data)
-
   rtide %<>% add_speeds()
 
   reference <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~!is.na(Datum)), by = "Station")
-
   secondary <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~is.na(Datum)), by = "Station")
 
   if (nrow(secondary)) error("predict_rtide is currently not implemented for secondary tide stations")
@@ -135,9 +147,9 @@ predict_rtide <- function(data, rtide = rtide::noaa, slack = FALSE, ...) {
 
   data <- reference
 
-  #  data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
-  #    dplyr::arrange_(~Station, ~DateTime) %>%
-  #    dplyr::as.tbl()
+  data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
+      dplyr::arrange_(~Station, ~DateTime) %>%
+      dplyr::as.tbl()
 
   data
 }
