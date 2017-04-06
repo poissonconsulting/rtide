@@ -1,6 +1,10 @@
 context("rtide")
 
-test_that("subset.rtide works", {
+test_that("is.rtide", {
+  expect_true(is.rtide(rtide::noaa))
+})
+
+test_that("subset.rtide", {
   noaa <- rtide::noaa
   expect_equal(subset(noaa, "TWC0401")$stations$Station,
                    c("TWC0401", "9410170"))

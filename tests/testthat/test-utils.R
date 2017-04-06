@@ -6,6 +6,18 @@ test_that("datetimes and seconds work", {
   expect_identical(datetime2seconds(seconds2datetime(datetime2seconds(start + lubridate::seconds(3)))), 3)
 })
 
+test_that("ft2m", {
+  expect_identical(ft2m(2), 0.6096)
+})
+
+test_that("hours_year works", {
+  expect_error(hours_year(1))
+  expect_identical(hours_year(ISOdate(2000,1,1,1,tz = "UTC")), 1)
+  expect_identical(hours_year(ISOdate(2000,1,1,c(1,3,1),tz = "UTC")), c(1L,3,1))
+  expect_identical(hours_year(ISOdate(2001,1,1,c(1,3,1),tz = "UTC")), c(1,3,1))
+  expect_identical(hours_year(ISOdate(2001,1,2,c(1,3,1),tz = "UTC")), c(25,27,25))
+})
+
 test_that("seq_datetime works", {
 
   minutes <- 17L
@@ -24,12 +36,4 @@ test_that("seq_datetime works", {
   expect_warning(seq_datetime(minutes = 1.9), "Truncating minutes interval to whole number")
   expect_error(seq_datetime(minutes = 0L), "the values in minutes must lie between 1 and 1440")
   expect_error(seq_datetime(minutes = 0.9), "the values in minutes must lie between 1 and 1440")
-})
-
-test_that("hours_year works", {
-  expect_error(hours_year(1))
-  expect_identical(hours_year(ISOdate(2000,1,1,1,tz = "UTC")), 1)
-  expect_identical(hours_year(ISOdate(2000,1,1,c(1,3,1),tz = "UTC")), c(1L,3,1))
-  expect_identical(hours_year(ISOdate(2001,1,1,c(1,3,1),tz = "UTC")), c(1,3,1))
-  expect_identical(hours_year(ISOdate(2001,1,2,c(1,3,1),tz = "UTC")), c(25,27,25))
 })
