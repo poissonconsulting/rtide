@@ -1,12 +1,12 @@
 Package: rtide
-Title: Tide Heights
-Version: 0.0.3.9000
-Date: 2017-01-02
+Title: Tide Heights and Timings
+Version: 0.0.3.9001
+Date: 2017-04-06
 Authors@R: c(
     person("Joe", "Thorley", email = "joe@poissonconsulting.ca", role = c("aut", "cre")),
     person("Luke", "Miller", email = "contact@lukemiller.org", role = "aut"))
-Description: Calculates tide heights and the timing of slack tides based on tide station harmonics and offsets.
-    It allows predictions for 3,042 NOAA tide stations.
+Description: Calculates tide heights, and the timing of slack tides, 
+    based on tide station harmonics and offsets for 3,042 NOAA tide stations.
 URL: https://github.com/poissonconsulting/rtide
 BugReports: https://github.com/poissonconsulting/rtide/issues
 Depends:
