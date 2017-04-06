@@ -8,16 +8,21 @@ station_offsets <- readRDS("data-raw/noaa/data/station_offsets.rds")
 
 harmonics %<>% select(Harmonic, HarmonicName)
 
-station_harmonics %<>% semi_join(filter(stations, Reference), by = "Station")
-station_offsets %<>% semi_join(filter(stations, !Reference), by = "Station")
-
-station_offsets %<>% semi_join(station_harmonics, by = c("ReferenceStation" = "Station"))
-
-stations %<>% filter(Station %in% c(station_harmonics$Station, station_offsets$Station))
+stations %<>% unique()
+station_datums %<>% unique()
+station_harmonics %<>% unique()
+station_offsets %<>% unique()
 
 stations %<>% left_join(station_datums, by = "Station")
 
 stations %<>% select(Station, Datum, Longitude, Latitude, StationName)
+
+station_harmonics %<>% semi_join(filter(stations, !is.na(Datum)), by = "Station")
+station_offsets %<>% semi_join(filter(stations, is.na(Datum)), by = "Station")
+
+station_offsets %<>% semi_join(station_harmonics, by = c("ReferenceStation" = "Station"))
+
+stations %<>% filter(Station %in% c(station_harmonics$Station, station_offsets$Station))
 
 noaa <- list(stations = stations,
                harmonics = harmonics,

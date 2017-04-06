@@ -40,7 +40,7 @@ library(dplyr)
 library(rtide)
 
 stations <- rtide::noaa$stations
-stations %<>% filter(str_detect(StationName, "Santa Barbara"))
+stations %<>% filter(str_detect(StationName, "Santa Barbara$"))
 stations
 
 datetime <- seq_datetime(from = as.Date("2016-07-13"), minutes = 10L, tz = "PST8PDT")
@@ -48,7 +48,7 @@ datetime <- seq_datetime(from = as.Date("2016-07-13"), minutes = 10L, tz = "PST8
 data <- expand.grid(Station = stations$Station, DateTime = datetime, stringsAsFactors = FALSE) %>% as.tbl()
 data
 
-#data %<>% predict_rtide(rtide = rtide::noaa)
+data %<>% predict_rtide(rtide = rtide::noaa)
 
 ```
 

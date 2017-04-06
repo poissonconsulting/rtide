@@ -77,14 +77,23 @@
 #   data %<>% dplyr::as.tbl()
 #   data
 # }
+#
 
-predict_rtide_reference_station <- function(data, rtide) {
-
+predict_rtide_height_reference_station <- function(data, rtide) {
 
 }
 
+predict_rtide_reference_station <- function(data, rtide) {
+  rtide %<>% subset(data$Station[1])
+
+  data %<>% plyr::adply(.margins = 1, .fun = predict_rtide_height_reference_station,
+                        rtide = rtide)
+  data
+}
+
 add_speeds <- function(rtide) {
-  rtide$harmonics %<>% dplyr::inner_join(TideHarmonics::harmonics, by = c("HarmonicName" = "name"))
+  rtide$Speed <- NULL
+  rtide$harmonics %<>% dplyr::inner_join(dplyr::select_(TideHarmonics::harmonics, HarmonicName = ~name, Speed = ~speed), by = "HarmonicName")
   rtide
 }
 
@@ -94,13 +103,13 @@ add_speeds <- function(rtide) {
 #'
 #' @param data A data.frame with the columns DateTime and Station.
 #' @param rtide The rtide object to use for the predictions.
-#' @param slack A flag indicating whether to also calculate the time and height of the closest slack tide.
+#' @param slack A flag indicating whether to also calculate the time and height of the next slack tide.
 #' @param ... Unused arguments.
 #' @return An updated data.frame with the additional column TideHeight and if \code{slack = TRUE}
 #' the additional columns DateTimeSlack and TideHeightSlack.
 #' @export
 predict_rtide <- function(data, rtide = rtide::noaa, slack = FALSE, ...) {
-  check_data2(data, values = list(DateTime = Sys.Date(), Station = ""))
+  check_data2(data, values = list(DateTime = Sys.time(), Station = ""))
   check_rtide(rtide)
   check_flag(slack)
 
@@ -111,6 +120,8 @@ predict_rtide <- function(data, rtide = rtide::noaa, slack = FALSE, ...) {
   tz <- lubridate::tz(data$DateTime)
 
   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
+
+  print(data)
 
   rtide %<>% add_speeds()
 
@@ -124,9 +135,9 @@ predict_rtide <- function(data, rtide = rtide::noaa, slack = FALSE, ...) {
 
   data <- reference
 
-  data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
-    dplyr::arrange_(~Station, ~DateTime) %>%
-    dplyr::as.tbl()
+  #  data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
+  #    dplyr::arrange_(~Station, ~DateTime) %>%
+  #    dplyr::as.tbl()
 
   data
 }

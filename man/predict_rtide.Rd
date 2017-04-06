@@ -11,7 +11,7 @@ predict_rtide(data, rtide = rtide::noaa, slack = FALSE, ...)
 
 \item{rtide}{The rtide object to use for the predictions.}
 
-\item{slack}{A flag indicating whether to also calculate the time and height of the closest slack tide.}
+\item{slack}{A flag indicating whether to also calculate the time and height of the next slack tide.}
 
 \item{...}{Unused arguments.}
 }
