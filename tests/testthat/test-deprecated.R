@@ -53,10 +53,22 @@ test_that("tide_height_data works", {
 })
 
 test_that("tide_height_data predictions", {
-  expect_equal(rtide::monterey$MLLW,
-               tide_height_data(rtide::monterey)$TideHeight, tolerance = 0.002)
-  expect_equal(rtide::brandywine$MLLW,
-               tide_height_data(rtide::brandywine)$TideHeight, tolerance = 0.002)
+
+  monterey <- rtide::monterey
+  monterey$MLLW <- monterey$TideHeight
+  monterey$TideHeight <- NULL
+  monterey$Station <- "Monterey, Monterey Harbor, California"
+
+  expect_equal(monterey$MLLW,
+               tide_height_data(monterey)$TideHeight, tolerance = 0.002)
+
+  brandywine <- rtide::brandywine
+  brandywine$MLLW <- brandywine$TideHeight
+  brandywine$TideHeight <- NULL
+  brandywine$Station <- "Brandywine Shoal Light, Delaware Bay, New Jersey"
+
+  expect_equal(brandywine$MLLW,
+               tide_height_data(brandywine)$TideHeight, tolerance = 0.002)
 })
 
 test_that("tide_height_data checks", {

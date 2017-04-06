@@ -32,8 +32,8 @@ library(rtide)
 # get all tide stations
 data <- rtide::noaa$stations 
 
-# select Monterey by station name
-data %<>% filter(str_detect(StationName, "^Monterey")) 
+# select Monterey by name
+data %<>% filter(str_detect(StationName, "Monterey,")) 
 data
 #> # A tibble: 1 × 5
 #>   Station Datum Longitude Latitude            StationName

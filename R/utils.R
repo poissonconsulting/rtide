@@ -4,6 +4,8 @@ seconds2datetime <- function(x) as.POSIXct(x, origin = ISOdate(1970,1,1,0), tz =
 
 error <- function(...) stop(..., call. = FALSE)
 
+cosd <- function(x) cos(x * pi/180)
+
 ft2m <- function(x) x * 0.3048
 
 hours_year <- function(datetime) {

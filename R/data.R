@@ -18,7 +18,7 @@
 #'
 #' @format A tbl data frame:
 #' \describe{
-#'   \item{Station}{The station name (chr).}
+#'   \item{Station}{The station code (chr).}
 #'   \item{DateTime}{The date time (time).}
 #'   \item{TideHeight}{The tide height in m (dbl).}
 #' }
@@ -30,7 +30,7 @@
 #'
 #' @format A tbl data frame:
 #' \describe{
-#'   \item{Station}{The station name (chr).}
+#'   \item{Station}{The station code (chr).}
 #'   \item{DateTime}{The date time (time).}
 #'   \item{TideHeight}{The tide height in m (dbl).}
 #' }
