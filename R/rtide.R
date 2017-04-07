@@ -20,7 +20,7 @@ check_rtide <- function(x) {
 
   check_key(x$harmonics, key = "HarmonicName")
 
-  check_join(x$harmonics, TideHarmonics::harmonics, join = c("HarmonicName" = "name"))
+  check_join(x$harmonics, TideHarmonics::harmonics, join = c("Harmonic" = "name"))
 
   check_data2(x$station_harmonics, values = list(Station = "", Harmonic = "", Amplitude = c(0, 10), Phase = c(0, 360)),
               key = c("Station", "Harmonic"))
@@ -39,7 +39,7 @@ check_rtide <- function(x) {
   if (!all(x$stations$Station %in% c(x$station_harmonics$Station, x$station_offsets$Station)))
     error("all stations must be in station_harmonics and station_offsets")
 
-  x
+  invisible(x)
 }
 
 #' @export

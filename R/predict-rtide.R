@@ -79,16 +79,30 @@
 # }
 #
 
+add_corrections <- function(rtide, date) {
+  lamb <- TideHarmonics::lambdas(date)
+  adj <- nodal_adj(lamb[3,], lamb[4,], lamb[5,])
+
+  adj <- dplyr::data_frame(Harmonic = rownames(adj[[1]]), AmplitudeCor = adj$fn[,1], PhaseAdj = adj$un[,1])
+
+  rtide$station_harmonics$AmplitudeCor <- NULL
+  rtide$station_harmonics$PhaseAdj <- NULL
+
+  rtide$station_harmonics %<>% dplyr::left_join(adj, by = "Harmonic")
+  rtide
+}
+
+add_speeds <- function(rtide) {
+  rtide$station_harmonics$Speed <- NULL
+  rtide$station_harmonics %<>% dplyr::inner_join(dplyr::select_(TideHarmonics::harmonics, Harmonic = ~name, Speed = ~speed), by = "Harmonic")
+  rtide
+}
+
 predict_rtide_height_reference_station_datetime <- function(date_time, rtide) {
+  rtide %<>% add_corrections(date_time)
 
-  amplitude <- rtide$station_harmonics$Amplitude
-  speed <- rtide$station_harmonics$Speed
-  phase <- rtide$station_harmonics$Phase
-  datum <- rtide$stations$Datum
-
-  height <- amplitude * cosd(speed * hours_year(date_time) - phase)
-  height %<>% sum() %>% magrittr::add(datum)
-  height
+  rtide$station_harmonics %<>% dplyr::mutate_(Term = ~Amplitude * AmplitudeCor * cosd(Speed * hours_year(date_time) + PhaseAdj - Phase))
+  sum(rtide$station_harmonics$Term) + rtide$stations$Datum
 }
 
 predict_rtide_reference_station_row <- function(data, rtide) {
@@ -104,12 +118,6 @@ predict_rtide_reference_station <- function(data, rtide) {
   data %<>% plyr::adply(.margins = 1, .fun = predict_rtide_reference_station_row,
                         rtide = rtide)
   data
-}
-
-add_speeds <- function(rtide) {
-  rtide$Speed <- NULL
-  rtide$harmonics %<>% dplyr::inner_join(dplyr::select_(TideHarmonics::harmonics, HarmonicName = ~name, Speed = ~speed), by = "HarmonicName")
-  rtide
 }
 
 #' Predict Tide Height

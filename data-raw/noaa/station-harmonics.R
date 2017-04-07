@@ -13,10 +13,11 @@ get_station_harmonics <- function(x, harmonics, html) {
 
   x %<>% merge(table, by = NULL)
 
-  if (!identical(x$Name, harmonics$Harmonic)) return(NULL)
+  if (!identical(x$Name, harmonics$HarmonicName)) return(NULL)
   stopifnot(!identical(x$Speed, harmonics$Speed))
 
-  x %<>% select(Station, Harmonic = Name, Amplitude, Phase)
+  x$Harmonic <- harmonics$Harmonic
+  x %<>% select(Station, Harmonic, Amplitude, Phase)
 
   x
 }
