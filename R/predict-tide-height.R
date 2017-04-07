@@ -124,33 +124,29 @@ predict_rtide_reference_station <- function(data, rtide) {
 #'
 #' Predicts tide heights (in m) at stations and date times provided in new_data.
 #'
+#' predict_tide_height is only defined for stations with harmonics which are indicated
+#' by non-missing Datum values.
+#'
 #' @param data A data.frame with the columns DateTime and Station.
 #' @param rtide The rtide object to use for the predictions.
-#' @param slack A flag indicating whether to also calculate the time and height of the next slack tide.
 #' @param ... Unused arguments.
-#' @return An updated data.frame with the additional column TideHeight and if \code{slack = TRUE}
-#' the additional columns DateTimeSlack and TideHeightSlack.
+#' @return An updated data.frame with the additional column TideHeight.
 #' @export
-predict_rtide <- function(data, rtide = rtide::noaa, slack = FALSE, ...) {
+predict_tide_height <- function(data, rtide = rtide::noaa, ...) {
   check_data2(data, values = list(DateTime = Sys.time(), Station = ""))
   check_rtide(rtide)
-  check_flag(slack)
-
-  if (slack) error("predict_rtide is currently not implemented for slack tides")
 
   rtide %<>% subset(data$Station) %>% add_speeds()
+
+  secondary <- dplyr::filter_(rtide$stations, ~is.na(Datum))
+
+  if(nrow(secondary))
+    error("predict_tide_height is only defined for stations with harmonics (indicated by non-missing Datum values)")
 
   tz <- lubridate::tz(data$DateTime)
   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
 
-  primary <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~!is.na(Datum)), by = "Station")
-  secondary <- dplyr::semi_join(data, dplyr::filter_(rtide$stations, ~is.na(Datum)), by = "Station")
-
-  if (nrow(secondary)) error("predict_rtide is currently not implemented for secondary tide stations")
-
-  primary %<>% plyr::ddply(.variables = c("Station"), predict_rtide_reference_station, rtide = rtide)
-
-  data <- primary
+  data %<>% plyr::ddply(.variables = c("Station"), predict_rtide_reference_station, rtide = rtide)
 
   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
       dplyr::arrange_(~Station, ~DateTime) %>%

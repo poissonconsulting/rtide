@@ -89,7 +89,7 @@ tide_height_data_station <- function(data, harmonics) {
 #' @return A tibble of the tide heights in m.
 #' @export
 tide_height_data <- function(data, harmonics = rtide::harmonics) {
-  .Deprecated("predict_rtide")
+  .Deprecated("predict_tide_height")
 
   data %<>% check_data2(values = list(Station = "", DateTime = Sys.time()))
 

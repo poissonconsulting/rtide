@@ -38,7 +38,7 @@ data
 #> # A tibble: 1 × 5
 #>   Station Datum Longitude Latitude            StationName
 #>     <chr> <dbl>     <dbl>    <dbl>                  <chr>
-#> 1 9413450 1.031  -121.888   36.605 Monterey, Monterey Bay
+#> 1 9413450 1.893  -121.888   36.605 Monterey, Monterey Bay
 
 # set up date times for predictions
 datetime <- rtide::seq_datetime(from = as.Date("2016-07-13"), to = as.Date("2016-07-15"), minutes = 10L, tz = "PST8PDT") 
@@ -47,7 +47,7 @@ datetime <- rtide::seq_datetime(from = as.Date("2016-07-13"), to = as.Date("2016
 data %<>% merge(data_frame(DateTime = datetime)) %>% as.tbl()
 
 # predict tide heights
-data %<>% rtide::predict_rtide(rtide = rtide::noaa)
+data %<>% rtide::predict_tide_height(rtide = rtide::noaa)
 ```
 
 ``` r
