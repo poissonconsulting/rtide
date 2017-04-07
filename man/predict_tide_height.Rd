@@ -19,7 +19,3 @@ An updated data.frame with the additional column TideHeight.
 \description{
 Predicts tide heights (in m) at stations and date times provided in new_data.
 }
-\details{
-predict_tide_height is only defined for stations with harmonics which are indicated
-by non-missing Datum values.
-}

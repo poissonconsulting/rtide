@@ -124,9 +124,6 @@ predict_rtide_reference_station <- function(data, rtide) {
 #'
 #' Predicts tide heights (in m) at stations and date times provided in new_data.
 #'
-#' predict_tide_height is only defined for stations with harmonics which are indicated
-#' by non-missing Datum values.
-#'
 #' @param data A data.frame with the columns DateTime and Station.
 #' @param rtide The rtide object to use for the predictions.
 #' @param ... Unused arguments.
@@ -140,8 +137,8 @@ predict_tide_height <- function(data, rtide = rtide::noaa, ...) {
 
   secondary <- dplyr::filter_(rtide$stations, ~is.na(Datum))
 
-  if(nrow(secondary))
-    error("predict_tide_height is only defined for stations with harmonics (indicated by non-missing Datum values)")
+  if (nrow(secondary))
+    error("predict_tide_height is currently only defined for stations with harmonics (indicated by non-missing Datum values)")
 
   tz <- lubridate::tz(data$DateTime)
   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
