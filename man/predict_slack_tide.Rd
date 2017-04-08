@@ -14,8 +14,8 @@ predict_slack_tide(data, rtide = rtide::noaa, ...)
 \item{...}{Unused arguments.}
 }
 \value{
-An updated data.frame with the additional columns SlackDateTime, SlackTideHeight, SlackHighTide.
+An updated data.frame with the additional columns SlackDateTime, SlackTideHeight, SlackType.
 }
 \description{
-Predicts next slack tide time and height (in m) at stations and date times provided in new_data.
+Predicts closest slack tide time and height (in m) at stations and date times provided in new_data.
 }

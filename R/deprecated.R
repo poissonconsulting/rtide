@@ -58,6 +58,18 @@ tide_stations <- function(stations = ".*", harmonics = rtide::harmonics) {
 tide_height_datetime <- function(d, h) {
   h$NodeYear <- h$NodeYear[,as.character(lubridate::year(d)),,drop = FALSE]
 
+  print(h$Station$Datum)
+
+  x <- data.frame(Amplitude = h$StationNode[,,"A"],
+                  Phase = h$StationNode[,,"Kappa"],
+                  Speed = h$Node$Speed,
+                  AmplitudeCor = h$NodeYear[,,"NodeFactor"],
+                  PhaseAdj = h$NodeYear[,,"EquilArg"])
+
+  x <- x[x$Amplitude != 0,]
+
+  print(x)
+
   height <- h$Station$Datum + sum(h$NodeYear[,,"NodeFactor"] * h$StationNode[,,"A"] *
                                     cos((h$Node$Speed * (hours_year(d) - h$Station$Hours) +
                                            h$NodeYear[,,"EquilArg"] - h$StationNode[,,"Kappa"]) * pi/180))

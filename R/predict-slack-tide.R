@@ -1,133 +1,56 @@
-# tide_slack_datetime <- function(d, h, high = TRUE, forward = TRUE) {
-#   hours <- lubridate::minutes(cumsum(c(0,rep(15,25)))) * if (forward) 1 else -1
-#   height <- vapply(d + hours, tide_height_datetime, 1, h = h)
-#   which <- which.max(height * if (high) 1 else -1)
-#   d %<>% magrittr::add(hours[which])
-#
-#   minutes <- lubridate::minutes(c(cumsum(rep(-1,15)), 0, cumsum(rep(1,15))))
-#   height <- vapply(d + minutes, tide_height_datetime, 1, h = h)
-#   which <- which.max(height * if (high) 1 else -1)
-#   d %<>% magrittr::add(minutes[which])
-#
-#   seconds <- lubridate::seconds(c(cumsum(rep(-3,10)), 0, cumsum(rep(3,10))))
-#   height <- vapply(d + seconds, tide_height_datetime, 1, h = h)
-#   which <- which.max(height * if (high) 1 else -1)
-#   d %<>% magrittr::add(seconds[which])
-#
-#   seconds <- lubridate::seconds(c(cumsum(rep(-1,3)), 0, cumsum(rep(1,3))))
-#   height <- vapply(d + seconds, tide_height_datetime, 1, h = h)
-#   which <- which.max(height * if (high) 1 else -1)
-#   d %<>% magrittr::add(seconds[which])
-#
-#   d
-# }
-#
-# tide_slack_data_datetime <- function(d, h) {
-#   datetimes <- list(
-#     tide_slack_datetime(d$DateTime, h, TRUE, TRUE),
-#     tide_slack_datetime(d$DateTime, h, TRUE, FALSE),
-#     tide_slack_datetime(d$DateTime, h, FALSE, TRUE),
-#     tide_slack_datetime(d$DateTime, h, FALSE, FALSE))
-#
-#   seconds <- vapply(datetimes, datetime2seconds, 1)
-#   which <- which.min(abs(seconds - datetime2seconds(d$DateTime)))
-#
-#   d$SlackDateTime <- datetimes[[which]]
-#   d$SlackTideHeight <- tide_height_datetime(d$SlackDateTime, h = h)
-#   d$SlackType <- if(which %in% 1:2) "high" else "low"
-#   d
-# }
-#
-# tide_slack_data_station <- function(data, harmonics) {
-#   harmonics %<>% subset(stringr::str_c("^", data$Station[1], "$"))
-#   data <- plyr::adply(.data = data, .margins = 1, .fun = tide_slack_data_datetime,
-#                       h = harmonics)
-#   if (harmonics$Station$Units %in% c("feet", "ft"))
-#     data %<>% dplyr::mutate_(SlackTideHeight = ~ft2m(SlackTideHeight))
-#   data
-# }
-#
-# tide_slack_data <- function (data, harmonics = rtide::harmonics) {
-#   data %<>% check_data2(values = list(Station = "", DateTime = Sys.time()))
-#
-#   if (!all(data$Station %in% tide_stations(harmonics = harmonics)))
-#     stop("unrecognised stations", call. = FALSE)
-#
-#   if (tibble::has_name(data, "SlackTideHeight"))
-#     stop("data already has 'SlackTideHeight' column", call. = FALSE)
-#
-#   if (tibble::has_name(data, "SlackDateTime"))
-#     stop("data already has 'SlackDateTime' column", call. = FALSE)
-#
-#   if (tibble::has_name(data, "SlackType"))
-#     stop("data already has 'SlackType' column", call. = FALSE)
-#
-#   tz <- lubridate::tz(data$DateTime)
-#   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
-#
-#   years <- range(lubridate::year(data$DateTime), na.rm = TRUE)
-#   if (!all(years %in% years_tide_harmonics(harmonics)))
-#     stop("years are outside harmonics range", call. = FALSE)
-#
-#   data %<>% plyr::ddply(.variables = c("Station"), tide_slack_data_station, harmonics = harmonics)
-#
-#   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz))
-#   data %<>% dplyr::mutate_(SlackDateTime = ~lubridate::with_tz(SlackDateTime, tzone = tz))
-#   data %<>% dplyr::arrange_(~Station, ~DateTime)
-#   data %<>% dplyr::as.tbl()
-#   data
-# }
-#
-
-add_corrections <- function(rtide, date) {
-  lamb <- TideHarmonics::lambdas(date)
-  adj <- nodal_adj(lamb[3,], lamb[4,], lamb[5,])
-
-  adj <- dplyr::data_frame(Harmonic = rownames(adj[[1]]), AmplitudeCor = adj$fn[,1], PhaseAdj = adj$un[,1])
-
-  rtide$station_harmonics$AmplitudeCor <- NULL
-  rtide$station_harmonics$PhaseAdj <- NULL
-
-  rtide$station_harmonics %<>% dplyr::left_join(adj, by = "Harmonic")
-  rtide
+predict_reference_station_slope_datetime <- function(date_time, rtide) {
+  seconds <- lubridate::seconds(c(-1,1))
+  date_time %<>% magrittr::add(seconds)
+  height <- vapply(predict_rtide_height_reference_station_datetime, rtide = rtide)
+  slope <- diff(height) %>% abs() %>% magrittr::divide_by(2)
+  slope
 }
 
-add_speeds <- function(rtide) {
-  rtide$station_harmonics$Speed <- NULL
-  rtide$station_harmonics %<>% dplyr::inner_join(dplyr::select_(TideHarmonics::harmonics, Harmonic = ~name, Speed = ~speed), by = "Harmonic")
-  rtide
+slack <- function(date_time, periods, rtide) {
+  slope <- vapply(date_time + periods, predict_reference_station_slope_datetime, 1, rtide = rtide)
+  which <- which.min(slope)
+  date_time %<>% magrittr::add(periods[which])
+  date_time
 }
 
-predict_rtide_height_reference_station_datetime <- function(date_time, rtide) {
-  rtide %<>% add_corrections(date_time)
+predict_slack_reference_station_datetime <- function(date_time, rtide) {
+  hours <- lubridate::minutes(seq(-7, 7, by = 15))
+  minutes <- lubridate::minutes(seq(-15, 15, by = 1))
+  seconds <- lubridate::seconds(seq(-30, 30, by = 3))
+  seconds2 <- lubridate::seconds(seq(-3, 3, by = 1))
 
-  rtide$station_harmonics %<>% dplyr::mutate_(Term = ~Amplitude * AmplitudeCor * cosd(Speed * hours_year(date_time) + PhaseAdj - Phase))
-  sum(rtide$station_harmonics$Term) + rtide$stations$Datum
+  date_time %<>% slack(hours, rtide = rtide)
+  date_time %<>% slack(minutes, rtide = rtide)
+  date_time %<>% slack(seconds, rtide = rtide)
+  date_time %<>% slack(seconds2, rtide = rtide)
+
+  date_time
 }
 
-predict_rtide_reference_station_row <- function(data, rtide) {
-  data$TideHeight <- predict_rtide_height_reference_station_datetime(data$DateTime, rtide)
+predict_slack_reference_station_row <- function(data, rtide) {
+  data$SlackDateTime <- predict_slack_reference_station_datetime(data$DateTime, rtide)
+  data$SlackTideHeight <- predict_rtide_height_reference_station_datetime(data$SlackDateTime, rtide)
   data
 }
 
-predict_rtide_reference_station <- function(data, rtide) {
+predict_slack_reference_station <- function(data, rtide) {
   rtide %<>% subset(data$Station[1])
 
   rtide$station_harmonics %<>% dplyr::full_join(rtide$harmonics, by = "Harmonic")
 
-  data %<>% plyr::adply(.margins = 1, .fun = predict_rtide_reference_station_row,
+  data %<>% plyr::adply(.margins = 1, .fun = predict_slack_reference_station_row,
                         rtide = rtide)
   data
 }
 
 #' Predict Tide Height
 #'
-#' Predicts next slack tide time and height (in m) at stations and date times provided in new_data.
+#' Predicts closest slack tide time and height (in m) at stations and date times provided in new_data.
 #'
 #' @param data A data.frame with the columns DateTime and Station.
 #' @param rtide The rtide object to use for the predictions.
 #' @param ... Unused arguments.
-#' @return An updated data.frame with the additional columns SlackDateTime, SlackTideHeight, SlackHighTide.
+#' @return An updated data.frame with the additional columns SlackDateTime, SlackTideHeight, SlackType.
 #' @export
 predict_slack_tide <- function(data, rtide = rtide::noaa, ...) {
   check_data2(data, values = list(DateTime = Sys.time(), Station = ""))
@@ -135,19 +58,19 @@ predict_slack_tide <- function(data, rtide = rtide::noaa, ...) {
 
   rtide %<>% subset(data$Station) %>% add_speeds()
 
-  # secondary <- dplyr::filter_(rtide$stations, ~is.na(Datum))
-  #
-  # if (nrow(secondary))
-  #   error("predict_tide_height is currently only defined for stations with harmonics (indicated by non-missing Datum values)")
-  #
-  # tz <- lubridate::tz(data$DateTime)
-  # data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
-  #
-  # data %<>% plyr::ddply(.variables = c("Station"), predict_rtide_reference_station, rtide = rtide)
-  #
-  # data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
-  #     dplyr::arrange_(~Station, ~DateTime) %>%
-  #     dplyr::as.tbl()
+   secondary <- dplyr::filter_(rtide$stations, ~is.na(Datum))
+
+   if (nrow(secondary))
+     error("predict_tide_height is currently only defined for stations with harmonics (indicated by non-missing Datum values)")
+
+   tz <- lubridate::tz(data$DateTime)
+   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = "UTC"))
+
+   data %<>% plyr::ddply(.variables = c("Station"), predict_slack_reference_station, rtide = rtide)
+
+   data %<>% dplyr::mutate_(DateTime = ~lubridate::with_tz(DateTime, tzone = tz)) %>%
+       dplyr::arrange_(~Station, ~DateTime) %>%
+       dplyr::as.tbl()
 
   data
 }
