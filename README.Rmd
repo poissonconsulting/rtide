@@ -25,6 +25,8 @@ knitr::opts_chunk$set(
 `rtide` is an R package to calculate tide heights and the timing of slack tides.
 
 The object `rtide::noaa` allows predictions for `r nrow(rtide::noaa$stations)` [NOAA](https://tidesandcurrents.noaa.gov) tide stations.
+Please read the [disclaimer](https://tidesandcurrents.noaa.gov/disclaimers.html).
+rtide is not suitable for navigation.
 
 ## Utilisation
 
