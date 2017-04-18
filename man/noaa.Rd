@@ -12,4 +12,7 @@ noaa
 A object of class rtide providing harmonics and offsets for NOAA tide stations.
 The information was scraped from \url{"https://tidesandcurrents.noaa.gov"} on April 5, 2017.
 }
+\details{
+Please read the disclaimer at \url{https://tidesandcurrents.noaa.gov/disclaimers.html}.
+}
 \keyword{datasets}
