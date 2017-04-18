@@ -1,9 +1,10 @@
 Package: rtide
 Title: Tide Heights and Timings
-Version: 0.0.3.9001
-Date: 2017-04-06
+Version: 0.0.3.9002
+Date: 2017-04-18
 Authors@R: c(
     person("Joe", "Thorley", email = "joe@poissonconsulting.ca", role = c("aut", "cre")),
+    person("Abram", "Fleishman", role = "aut"),
     person("Luke", "Miller", email = "contact@lukemiller.org", role = "aut"))
 Description: Calculates tide heights, and the timing of slack tides, 
     based on tide station harmonics and offsets for 3,042 NOAA tide stations.
